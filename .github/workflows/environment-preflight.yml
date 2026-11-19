@@ -1,0 +1,58 @@
+
+name: Project Shield L1 - Computational Preflight
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  environment-check:
+    name: Check scientific computing environment
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Inspect runner and scientific tools
+        shell: bash
+        run: |
+          set -u
+
+          echo "=== OPERATING SYSTEM ==="
+          uname -a
+          cat /etc/os-release
+
+          echo "=== COMPUTING RESOURCES ==="
+          echo "Available CPU cores:"
+          nproc
+          echo "Memory:"
+          free -h
+          echo "Disk:"
+          df -h .
+
+          echo "=== SCIENTIFIC SOFTWARE ==="
+          for tool in python3 gcc g++ gfortran cmake git mpicc mpirun h5cc h5pcc; do
+            if command -v "$tool" >/dev/null 2>&1; then
+              echo "$tool: AVAILABLE"
+            else
+              echo "$tool: NOT INSTALLED"
+            fi
+          done
+
+          echo "=== GITHUB NETWORK ACCESS ==="
+          if getent hosts github.com >/dev/null 2>&1; then
+            echo "GitHub DNS: OK"
+          else
+            echo "GitHub DNS: UNAVAILABLE"
+          fi
+
+          if curl --head --silent --show-error --max-time 10 https://github.com >/dev/null; then
+            echo "GitHub HTTPS: OK"
+          else
+            echo "GitHub HTTPS: UNAVAILABLE"
+          fi
+
+          echo "=== PREFLIGHT COMPLETE ==="
+          echo "No software installed."
+          echo "No plasma simulations executed."
