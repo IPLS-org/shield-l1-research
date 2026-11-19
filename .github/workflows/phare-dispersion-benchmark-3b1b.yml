@@ -1,0 +1,314 @@
+name: Project Shield L1 - PHARE Dispersion Benchmark (3B.1B)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phare-dispersion-3b1b
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    name: Rebuild PHARE and qualify 1D plasma dispersion
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      PHARE_REMOTE: https://github.com/PHAREHUB/PHARE.git
+      PHARE_COMMIT: 7e5c72c1e5eec5452c8e3cfd000ce26c01e084ef
+      MPLBACKEND: Agg
+      PYTHONUNBUFFERED: '1'
+      OMP_NUM_THREADS: '1'
+
+    steps:
+      - name: Establish reproducibility record and install scientific dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p shield-evidence
+          {
+            date -u '+UTC: %Y-%m-%dT%H:%M:%SZ'
+            echo "Workflow commit: $GITHUB_SHA"
+            echo "PHARE commit: $PHARE_COMMIT"
+            cat /etc/os-release
+            echo 'CPU:'; nproc
+            echo 'Memory:'; free -h
+            echo 'Disk:'; df -h .
+            echo 'Python:'; python3 --version
+            echo 'CMake:'; cmake --version | head -n 1
+            echo 'C++:'; g++ --version | head -n 1
+            echo 'Fortran:'; gfortran --version | head -n 1
+          } | tee shield-evidence/runner-manifest.txt
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build gfortran git pkg-config \
+            openmpi-bin libopenmpi-dev libhdf5-openmpi-dev \
+            python3-dev python3-venv
+          command -v mpicc
+          command -v mpirun
+          mpirun --version | head -n 1
+          h5pcc -showconfig > shield-evidence/hdf5-configuration.txt
+          grep -E 'HDF5 Version|Parallel HDF5' shield-evidence/hdf5-configuration.txt
+          grep -Eqi 'Parallel HDF5:[[:space:]]*yes' shield-evidence/hdf5-configuration.txt
+          dpkg-query -W openmpi-bin libopenmpi-dev libhdf5-openmpi-dev \
+            > shield-evidence/mpi-hdf5-packages.txt
+
+      - name: Check exact PHARE revision and prepare Python environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none --no-checkout "$PHARE_REMOTE" PHARE
+          git -C PHARE checkout --detach "$PHARE_COMMIT"
+          test "$(git -C PHARE rev-parse HEAD)" = "$PHARE_COMMIT"
+          test -f PHARE/tests/functional/dispersion/dispersion.py
+          git -C PHARE log -1 --format='%H %cI %s' \
+            > shield-evidence/phare-source-revision.txt
+          sha256sum PHARE/tests/functional/dispersion/dispersion.py \
+            > shield-evidence/dispersion-source.sha256
+          python3 -m venv "$RUNNER_TEMP/phare-venv"
+          "$RUNNER_TEMP/phare-venv/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/phare-venv/bin/python" -m pip install \
+            -r PHARE/requirements.txt ddt pybind11
+          "$RUNNER_TEMP/phare-venv/bin/python" -m pip freeze \
+            > shield-evidence/python-package-freeze.txt
+          "$RUNNER_TEMP/phare-venv/bin/python" -c \
+            'import numpy, scipy, h5py, ddt, pybind11; print("Python imports: PASS")'
+
+      - name: Configure and enumerate PHARE dispersion tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/phare-venv/bin:$PATH"
+          cmake -S PHARE -B PHARE/build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=mpicc \
+            -DCMAKE_CXX_COMPILER=mpicxx \
+            -DHDF5_PREFER_PARALLEL=ON \
+            -DHighFive=ON \
+            -Dtest=ON \
+            -DPHARE_EXEC_LEVEL_MIN=10 \
+            -DPHARE_EXEC_LEVEL_MAX=10 \
+            2>&1 | tee shield-evidence/cmake-configure.log
+          ctest --test-dir PHARE/build -N -R '^py3_test-dispersion-o[123]$' \
+            | tee shield-evidence/dispersion-test-inventory.txt
+          grep -Eq 'Total Tests: 3' shield-evidence/dispersion-test-inventory.txt
+
+      - name: Rebuild pinned PHARE solver and physics-test dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/phare-venv/bin:$PATH"
+          cmake --build PHARE/build --parallel 2 \
+            2>&1 | tee shield-evidence/phare-build.log
+          echo 'PHARE C++ build completed (simulation tests not yet executed).'
+
+      - name: Execute three real PHARE hybrid plasma-wave tests
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$RUNNER_TEMP/phare-venv/bin:$PATH"
+          unset PHARE_DRY_RUN || true
+          ctest --test-dir PHARE/build --verbose -j 3 \
+            -R '^py3_test-dispersion-o[123]$' \
+            2>&1 | tee shield-evidence/dispersion-ctest.log
+          result=${PIPESTATUS[0]}
+          echo "$result" > shield-evidence/ctest-exit-status.txt
+          exit "$result"
+
+      - name: Independently re-evaluate wave frequencies and data completeness
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          #!/usr/bin/env python3
+          """Independent audit of PHARE's printed dispersion measurements.
+          
+          This does not replace an independent plasma-code comparison. It independently
+          recomputes the cold hybrid and discretisation-adjusted reference frequencies
+          from the numeric rows printed by PHARE's pinned upstream CTest integration tests.
+          """
+          import csv
+          import glob
+          import json
+          import math
+          import os
+          import pathlib
+          import re
+          import sys
+          from collections import Counter
+          
+          out = pathlib.Path('shield-evidence')
+          out.mkdir(exist_ok=True)
+          logfile = out / 'dispersion-ctest.log'
+          inventory_path = out / 'dispersion-test-inventory.txt'
+          issues = []
+          rows = []
+          max_err_scheme = 0.0
+          max_err_cold = 0.0
+          
+          inventory = inventory_path.read_text(errors='replace') if inventory_path.exists() else ''
+          test_map = {
+              int(n): int(p)
+              for n, p in re.findall(r'Test\s+#(\d+):\s+py3_test-dispersion-o([123])', inventory)
+          }
+          if len(test_map) != 3 or set(test_map.values()) != {1, 2, 3}:
+              issues.append(f'Expected 3 uniquely indexed dispersion tests, found {test_map}')
+          
+          log = logfile.read_text(errors='replace') if logfile.exists() else ''
+          for raw in log.splitlines():
+              match = re.match(r'^\s*(\d+):\s*(.*)$', raw)
+              if not match:
+                  continue
+              test_index, payload = int(match.group(1)), match.group(2)
+              parts = payload.split()
+              if len(parts) != 10 or parts[0] not in ('low_k', 'high_k') or parts[1] not in ('aic', 'whistler'):
+                  continue
+              try:
+                  run, branch = parts[:2]
+                  mode = int(parts[2])
+                  k, omega_printed_cold, omega_printed_scheme, measured, printed_error_cold, printed_error_scheme, amplitude = map(float, parts[3:])
+                  order = test_map[test_index]
+              except (ValueError, KeyError) as exc:
+                  issues.append(f'Could not parse row {payload[:100]}: {exc}')
+                  continue
+              dx = {'low_k': 0.8, 'high_k': 0.1}[run]
+              sgn = 1 if branch == 'whistler' else -1
+              # Cold hybrid omega(k), measured from first principles for massless cold electrons.
+              cold = k * (math.sqrt(1 + k*k/4) + sgn*k/2)
+              k_grid = (2/dx) * math.sin(k*dx/2)
+              di_effective = 1 - (order+1)*dx*dx/12
+              # PHARE's upstream test uses this empirically calibrated particle-shape correction.
+              scheme = k_grid * (math.sqrt(1+(k_grid*di_effective)**2/4) + sgn*k_grid*di_effective/2)
+              relative_scheme = (measured - scheme) / scheme
+              relative_cold = (measured - cold) / cold
+              max_err_scheme = max(max_err_scheme, abs(relative_scheme))
+              max_err_cold = max(max_err_cold, abs(relative_cold))
+              if abs(cold - omega_printed_cold) > 0.0005:
+                  issues.append(f'Cold-frequency reconstruction mismatch: o{order} {run} {branch} m{mode}')
+              if abs(scheme - omega_printed_scheme) > 0.0005:
+                  issues.append(f'Scheme-frequency reconstruction mismatch: o{order} {run} {branch} m{mode}')
+              if not 0.3 < amplitude < 3.0:
+                  issues.append(f'Wave amplitude outside (0.3,3.0): o{order} {run} {branch} m{mode}: {amplitude}')
+              if abs(relative_scheme) > 0.01:
+                  issues.append(f'Frequency beyond 1 percent corrected reference: o{order} {run} {branch} m{mode}: {relative_scheme:.3%}')
+              rows.append({
+                  'order': order, 'run': run, 'branch': branch, 'mode': mode,
+                  'k_di_printed': k, 'omega_theory_printed': omega_printed_cold,
+                  'omega_scheme_printed': omega_printed_scheme, 'omega_measured_printed': measured,
+                  'omega_cold_recomputed': cold, 'omega_scheme_recomputed': scheme,
+                  'relative_error_cold': relative_cold, 'relative_error_scheme': relative_scheme,
+                  'amplitude_ratio_printed': amplitude, 'err_cold_printed': printed_error_cold,
+                  'err_scheme_printed': printed_error_scheme,
+              })
+          
+          expected = {
+              (p, run, branch, m)
+              for p in (1, 2, 3)
+              for run, modes in (('low_k', (1, 2, 4, 8)), ('high_k', (1, 2, 3, 4)))
+              for branch in ('aic', 'whistler')
+              for m in modes
+          }
+          counts = Counter((r['order'], r['run'], r['branch'], r['mode']) for r in rows)
+          if len(rows) != 48:
+              issues.append(f'Expected 48 measured waves (16 per order); parsed {len(rows)}')
+          if set(counts) != expected:
+              issues.append(f'Mode inventory mismatch: missing={len(expected-set(counts))} unexpected={len(set(counts)-expected)}')
+          if any(v != 1 for v in counts.values()):
+              issues.append('Repeated measurement rows detected')
+          
+          ctest_exit_path = out / 'ctest-exit-status.txt'
+          try:
+              ctest_exit = int(ctest_exit_path.read_text().strip())
+          except (ValueError, FileNotFoundError):
+              ctest_exit = None
+          if ctest_exit != 0:
+              issues.append(f'Upstream CTest exit status not zero: {ctest_exit}')
+          
+          base = pathlib.Path('PHARE/build/tests/functional/dispersion')
+          raw_h5 = sorted(base.glob('dispersion_*_o*/EM_B.h5'))
+          plots = sorted(base.glob('dispersion_o[123].png'))
+          if len(raw_h5) != 6:
+              issues.append(f'Expected six raw B-field diagnostic HDF5 files, found {len(raw_h5)}')
+          if len(plots) != 3:
+              issues.append(f'Expected three dispersion plots, found {len(plots)}')
+          
+          csv_path = out / 'dispersion-frequency-results.csv'
+          if rows:
+              with csv_path.open('w', newline='') as handle:
+                  writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+                  writer.writeheader()
+                  writer.writerows(sorted(rows, key=lambda r: (r['order'], r['run'], r['branch'], r['mode'])))
+          
+          summary = {
+              'protocol': 'Project Shield L1 Phase 3B.1B, PHARE upstream dispersion qualification',
+              'source': 'PHAREHUB/PHARE',
+              'phare_commit': os.getenv('PHARE_COMMIT'),
+              'github_run_id': os.getenv('GITHUB_RUN_ID'),
+              'ctest_status': ctest_exit,
+              'measurements_parsed': len(rows),
+              'expected_measurements': 48,
+              'interpolation_orders': [1, 2, 3],
+              'branches': ['Alfven/ion-cyclotron', 'whistler'],
+              'max_absolute_relative_error_vs_cold_theory': max_err_cold,
+              'max_absolute_relative_error_vs_empirically_corrected_scheme': max_err_scheme,
+              'corrected_frequency_tolerance': 0.01,
+              'mode_amplitude_ratio_window': [0.3, 3.0],
+              'raw_magnetic_diagnostic_hdf5_count': len(raw_h5),
+              'dispersion_plot_count': len(plots),
+              'scheme_reference_has_empirical_particle_shape_correction': True,
+              'qualification_scope': '1D periodic propagation of small-amplitude waves in cold-ion/electron-fluid hybrid model',
+              'not_established': [
+                  'independent external-code agreement',
+                  'open-boundary solar-wind interaction',
+                  'magnetic obstacle or plasma inflation',
+                  'Earth-directed protective shielding',
+              ],
+              'issues': issues,
+              'status': 'PASS' if not issues else 'FAIL_OR_INCOMPLETE',
+          }
+          (out / 'dispersion-independent-evaluation.json').write_text(json.dumps(summary, indent=2)+'\n')
+          print(json.dumps(summary, indent=2))
+          if issues:
+              sys.exit(1)
+          PY
+
+      - name: Capture raw diagnostics and plot checksums
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p shield-evidence
+          if [ -d PHARE/build/tests/functional/dispersion ]; then
+            find PHARE/build/tests/functional/dispersion -type f \
+              \( -name 'EM_B.h5' -o -name 'dispersion_o*.png' \) \
+              -print0 | sort -z | xargs -0 -r sha256sum \
+              > shield-evidence/diagnostic-files.sha256
+            du -sh PHARE/build/tests/functional/dispersion \
+              > shield-evidence/diagnostics-directory-size.txt
+          fi
+          {
+            echo '### Phase 3B.1B: PHARE dispersion execution'
+            echo "- Upstream source revision: \`$PHARE_COMMIT\`"
+            echo '- Qualification: 1D cold-plasma AIC and whistler dispersion.'
+            echo '- Six runs, 48 measured wave modes, three interpolation orders.'
+            echo '- PASS means this pinned source passed the upstream tests and an independent numerical reread of its printed measurements.'
+            echo '- Scheme-adjusted frequencies contain an empirical particle-shape correction.'
+            echo '- This does not validate the proposed L1 protective mechanism.'
+            echo '- Inspect dispersion-independent-evaluation.json and raw magnetic-field diagnostics.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preserve reproducibility logs and magnetic field diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: shield-p3b1b-phare-dispersion-${{ github.run_id }}
+          path: |
+            shield-evidence/
+            PHARE/build/tests/functional/dispersion/dispersion_o*.png
+            PHARE/build/tests/functional/dispersion/dispersion_*_o*/EM_B.h5
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 6
