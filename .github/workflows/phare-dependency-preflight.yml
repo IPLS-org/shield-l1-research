@@ -1,0 +1,87 @@
+name: Project Shield L1 - PHARE Dependency and Source Preflight
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phare-dependency-preflight
+  cancel-in-progress: false
+
+jobs:
+  prereqs:
+    name: Verify PHARE prerequisites and pinned source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PHARE_REMOTE: https://github.com/PHAREHUB/PHARE.git
+      PHARE_COMMIT: 7e5c72c1e5eec5452c8e3cfd000ce26c01e084ef
+
+    steps:
+      - name: Record runner resources and toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== RUNNER ==='
+          cat /etc/os-release
+          nproc
+          free -h
+          df -h .
+          python3 --version
+          g++ --version | head -n 1
+          gfortran --version | head -n 1
+          cmake --version | head -n 1
+          git --version
+
+      - name: Install MPI and parallel HDF5 prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build gfortran git pkg-config \
+            openmpi-bin libopenmpi-dev libhdf5-openmpi-dev \
+            python3-dev python3-venv
+          command -v mpicc
+          command -v mpirun
+          mpicc --version | head -n 1
+          mpirun --version | head -n 1
+          H5PCC="$(command -v h5pcc || command -v h5pcc.openmpi || true)"
+          test -n "$H5PCC" || { echo 'ERROR: parallel HDF5 wrapper missing'; exit 1; }
+          "$H5PCC" -showconfig > hdf5-configuration.txt
+          grep -E 'HDF5 Version|Parallel HDF5' hdf5-configuration.txt
+          grep -Eqi 'Parallel HDF5:[[:space:]]*yes' hdf5-configuration.txt || {
+            echo 'ERROR: parallel HDF5 support not confirmed'; exit 1;
+          }
+          dpkg-query -W openmpi-bin libopenmpi-dev libhdf5-openmpi-dev
+
+      - name: Retrieve and verify exact PHARE source revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none --no-checkout "$PHARE_REMOTE" PHARE
+          git -C PHARE checkout --detach "$PHARE_COMMIT"
+          ACTUAL_COMMIT="$(git -C PHARE rev-parse HEAD)"
+          echo "Expected: $PHARE_COMMIT"
+          echo "Actual:   $ACTUAL_COMMIT"
+          test "$ACTUAL_COMMIT" = "$PHARE_COMMIT"
+          test -f PHARE/CMakeLists.txt
+          test -f PHARE/readme.md
+          git -C PHARE log -1 --format='%H %cI %s'
+          git -C PHARE status --short
+          du -sh PHARE
+          echo 'Verified source checkout. No compilation or simulation performed.'
+
+      - name: Record evidence boundary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '### PHARE source and dependency preflight'
+            echo "- Requested revision: \`$PHARE_COMMIT\`"
+            echo '- Inspect each step log for actual success or failure.'
+            echo '- No PHARE compilation or plasma simulation is performed.'
+          } >> "$GITHUB_STEP_SUMMARY"
