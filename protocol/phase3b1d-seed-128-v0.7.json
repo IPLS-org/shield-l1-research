@@ -1,0 +1,139 @@
+{
+  "acceptance": {
+    "G0": "Pinned source, exact protocol/reference SHA, immutable case except seed+name, HDF5 float64, exactly one complete level0 patch, 11 aligned timestamps, and 51200 macro particles at each snapshot",
+    "G1_G5": "The new real PHARE run must independently meet the same previous single-case conservation thresholds: 2 percent initial mode, N drift <=max(1e-12,8epsNmacro), Bx<=1e-12, momentum<=0.0032, compensated energy<=1.6e-5",
+    "I0": "Initial physically owned Bx/By/Bz fields must exactly equal the frozen seed314159 baseline owned arrays; any difference inconclusive, not a stochastic sensitivity fail",
+    "I1": "At least one initial particle position or velocity must differ from baseline, preserving same total particle count and global ion weight. Measure initial kinetic energy, momentum, deposited density RMS.",
+    "S1": "Maximum complex first Fourier harmonic new-vs-old /0.01 <=0.02 at all 11 times (absolute 2e-4)",
+    "S2": "Maximum initial-subtracted kinetic and transverse magnetic energy exchange differences independently /0.00032<=0.03 (absolute 9.6e-6)",
+    "S3": "Maximum initial-subtracted global ion momentum trajectory difference /0.064<=0.02 (absolute 0.00128)",
+    "S4": "Report observed two-seed differences beside preceding cross-grid differences, explicitly not partitioning grid error or estimating noise variance",
+    "S5": "After this single run and independent audit, hold a GO/NO-GO decision to shift to physical magnetic-obstacle model readiness. No open-ended seed campaign without a separately motivated reason."
+  },
+  "baseline_artifact_sha256": "a66631911992cbaebc92e4d056901ea30bb5330afb9ff154df4c57640f62c9e7",
+  "baseline_grid_pair_observed_differences": {
+    "comparison_run_id": 44819929641,
+    "ion_exchange_abs_diff": 4.4123522833361536e-07,
+    "magnetic_exchange_abs_diff": 4.4125085275130926e-07,
+    "momentum_evolution_abs_diff": 1.8679292025583185e-07,
+    "reference_run_id": 44805400036,
+    "scientific_limit": "Single grid pair confounds mesh and particle sampling; values are descriptive, not pure spatial errors.",
+    "wave_abs_complex_diff": 1.1747074485741537e-05
+  },
+  "baseline_reference_file": "protocol/p3b1d-seed-reference-run44819929641.json",
+  "baseline_reference_sha256": "64e3633729869a32ca9b859ee5095bd76aac2e918bbbf5a671132a8d8ac273e9",
+  "baseline_run_id": 44819929641,
+  "case": {
+    "B0": 1.0,
+    "cells": 128,
+    "density": 1.0,
+    "domain_length": 6.4,
+    "dx": 0.05,
+    "electron_temperature": 0.0,
+    "field_amplitude": 0.01,
+    "field_mode": 1,
+    "final_time": 1.0,
+    "hyper_resistivity": 0.0,
+    "initial_bulk_velocity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "initial_fields": "Bx=1; By=0.01*cos(2*pi*x/L); Bz=0.01*sin(2*pi*x/L), sampled at PHARE's proper field centre; ion u=0",
+    "interpolation_order": 2,
+    "ion_charge": 1.0,
+    "ion_mass": 1.0,
+    "name": "P1_grid128_second_seed_271828",
+    "particles_per_cell": 400,
+    "resistivity": 0.0,
+    "seed": 271828,
+    "snapshot_every_steps": 200,
+    "snapshot_times": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      1.0
+    ],
+    "solver_steps": 2000,
+    "time_step": 0.0005,
+    "vthermal": 0.001
+  },
+  "changed_case_parameters_only": [
+    "name",
+    "seed"
+  ],
+  "decision_labels": [
+    "BOUNDED_SEED_SENSITIVITY_SCREEN_PASS",
+    "BOUNDED_SEED_SENSITIVITY_SCREEN_FAIL",
+    "INCONCLUSIVE_INITIAL_FIELD",
+    "INCONCLUSIVE_DATA_CONTRACT",
+    "INVALID_CASE"
+  ],
+  "grid_control": {
+    "largest_patch_size": 128,
+    "max_nbr_levels": 1,
+    "reason": "Demand one complete level-0 patch to preserve audited single-patch HDF5 contract; no AMR.",
+    "smallest_patch_size": 128
+  },
+  "numeric_caps": {
+    "complex_mode_scaled": 0.02,
+    "kinetic_exchange_scaled": 0.03,
+    "momentum_trajectory_scaled": 0.02,
+    "transverse_exchange_scaled": 0.03
+  },
+  "particle_sampling": {
+    "baseline_seed": 314159,
+    "cells": 128,
+    "dx": 0.05,
+    "individual_macro_particles_expected_to_differ": true,
+    "limits": "Only two seeds, one difference per observable, no statistical confidence intervals or variance estimates. Do not treat numerical similarity as noise-free convergence.",
+    "macro_particles": 51200,
+    "new_seed": 271828,
+    "particles_per_cell": 400,
+    "same_grid_geometry_and_physics": true
+  },
+  "phare_commit": "7e5c72c1e5eec5452c8e3cfd000ce26c01e084ef",
+  "phase": "3B.1D-SS1",
+  "previous_reader_sha256": "edbbed49b5ff737caa7bc0426852263ac87a117733d7baac30d526e5bac72898",
+  "protocol_id": "P3B1D-SEED-128-20261120-v0.7",
+  "purpose": "One pre-registered additional seed at 128 cells to probe PIC sampling dependence before transition to physically relevant obstacle-readiness modelling",
+  "registered_scales": {
+    "delta": 0.01,
+    "momentum": 0.064,
+    "particle_equivalent": 6.4,
+    "transverse_magnetic_energy": 0.00032
+  },
+  "required_hdf5": [
+    "EM_B.h5",
+    "EM_E.h5",
+    "ions_charge_density.h5",
+    "ions_charge_flux.h5",
+    "ions_pop_protons_domain.h5"
+  ],
+  "research_predecessor_commit": "4ce2424a3b09fbfed344731968e7d0bd836032b2",
+  "resource_limits": {
+    "artifact_retention_days": 14,
+    "cmake_build_seconds": 1800,
+    "github_job_minutes": 50,
+    "max_hdf5_bytes": 134217728,
+    "max_single_file_bytes": 33554432,
+    "min_disk_free_gib": 10,
+    "min_mem_available_gib": 4,
+    "solver_wall_seconds": 300
+  },
+  "scientific_restrictions": [
+    "Single paired seed sensitivity is descriptive, not a confidence interval",
+    "No asymptotic grid or temporal order estimate",
+    "No obstacle, no open boundary solar wind, no magnetosphere or geoeffectiveness",
+    "Do not change acceptance thresholds after seeing results"
+  ],
+  "scope": "One additional 128-cell seed, fixed 1D periodic ideal hybrid zero-electron-temperature proton plasma, no Shield L1 physics proof",
+  "status": "REVIEW_DRAFT_NOT_AUTHORISATION_TO_DISPATCH"
+}
