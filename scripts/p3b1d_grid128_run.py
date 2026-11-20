@@ -66,7 +66,7 @@ def run(protocol_path: Path, output: Path):
     L = cfg['domain_length']; delta = cfg['field_amplitude']; k = 2*np.pi/L
     sim = ph.Simulation(time_step=cfg['time_step'],final_time=cfg['final_time'],
                         cells=cfg['cells'],dl=cfg['dx'],interp_order=cfg['interpolation_order'],
-                        smallest_patch_size=cfg['cells'],largest_patch_size=cfg['cells'],max_nbr_levels=1,
+                        smallest_patch_size=cfg['cells'],largest_patch_size=cfg['cells'],
                         resistivity=0.0,hyper_resistivity=0.0,
                         diag_options={'format':'phareh5','options':{'dir':str(output),'mode':'overwrite'}})
     ph.MaxwellianFluidModel(
