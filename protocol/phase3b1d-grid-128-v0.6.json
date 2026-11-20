@@ -1,0 +1,136 @@
+{
+  "acceptance": {
+    "G0": "Pinned provenance, one complete level-0 patch and 11 common times, float64 diagnostics, correct 51200 particles; false -> INCONCLUSIVE, no physics result",
+    "G1_G5": "Use same previous single-case G1-G5 thresholds; new 128-cell run must independently pass all",
+    "I0": "Initial circular complex first harmonic on 128 physical dual nodes within 2% of delta 0.01, phase and wrong helicity within 2% of delta; background Bx=1",
+    "I1": "Initial weighted ion number equals L n0=6.4, and initial deposited charge integral within 1e-8; thermal K and momentum differences reported as noise proxies NOT exact matching required",
+    "S1": "Max complex first harmonic new-minus-64 reference /0.01 <= 0.02 (absolute 2.0e-4)",
+    "S2": "Max initial-subtracted ion kinetic and transverse magnetic exchange differences separately /0.00032 <=0.03 (absolute 9.6e-6)",
+    "S3": "Max initial-subtracted 3D ion-momentum trajectory difference /0.064 <=0.02 (absolute 0.00128)",
+    "S4": "Initial distribution noise indicators and spatial amplitude/leakage reported; one seed not sufficient for statistical confidence or convergence order"
+  },
+  "baseline_artifact_sha256": "920659a199661afd765072877385cf87ba9237afc7b4105ee9b80bdf0caafdbf",
+  "baseline_reference_file": "protocol/p3b1d-grid-reference-run44805400036.json",
+  "baseline_reference_sha256": "9954b1b66164b32eb708adb1c8c0296ad7c16c11bdc14ed245cd49942d9a3c8c",
+  "baseline_research_commit": "adb4e5393e95628ce559d38876fa50a14828cc1b",
+  "baseline_run_id": 44805400036,
+  "case": {
+    "B0": 1.0,
+    "cells": 128,
+    "density": 1.0,
+    "domain_length": 6.4,
+    "dx": 0.05,
+    "electron_temperature": 0.0,
+    "field_amplitude": 0.01,
+    "field_mode": 1,
+    "final_time": 1.0,
+    "hyper_resistivity": 0.0,
+    "initial_bulk_velocity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "initial_fields": "Bx=1; By=0.01*cos(2*pi*x/L); Bz=0.01*sin(2*pi*x/L), sampled at PHARE's proper field centre; ion u=0",
+    "interpolation_order": 2,
+    "ion_charge": 1.0,
+    "ion_mass": 1.0,
+    "name": "P1_grid_128_fixed_ppc",
+    "particles_per_cell": 400,
+    "resistivity": 0.0,
+    "seed": 314159,
+    "snapshot_every_steps": 200,
+    "snapshot_times": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      1.0
+    ],
+    "solver_steps": 2000,
+    "time_step": 0.0005,
+    "vthermal": 0.001
+  },
+  "changed_case_parameters_only": [
+    "name",
+    "cells",
+    "dx"
+  ],
+  "decision_labels": [
+    "BOUNDED_GRID_SENSITIVITY_SCREEN_PASS",
+    "BOUNDED_GRID_SENSITIVITY_SCREEN_FAIL",
+    "INCONCLUSIVE_DATA_CONTRACT",
+    "INVALID_CASE"
+  ],
+  "grid_control": {
+    "largest_patch_size": 128,
+    "max_nbr_levels": 1,
+    "reason": "Demand one complete level-0 patch to preserve audited single-patch HDF5 contract; no AMR.",
+    "smallest_patch_size": 128
+  },
+  "numeric_caps": {
+    "complex_mode_scaled": 0.02,
+    "kinetic_exchange_scaled": 0.03,
+    "momentum_trajectory_scaled": 0.02,
+    "transverse_exchange_scaled": 0.03
+  },
+  "particle_sampling": {
+    "coarse_macro_count": 25600,
+    "fine_macro_count": 51200,
+    "particles_per_cell_fixed": 400,
+    "sampling_not_identical": true,
+    "uncontrolled_noise_limitation": "Same seed does NOT imply identical particles when grid and macro count change; not pure truncation-error isolation."
+  },
+  "phare_commit": "7e5c72c1e5eec5452c8e3cfd000ce26c01e084ef",
+  "phase": "3B.1D-SDX1",
+  "previous_reader_sha256": "edbbed49b5ff737caa7bc0426852263ac87a117733d7baac30d526e5bac72898",
+  "protocol_id": "P3B1D-GRID-128-20261120-v0.6",
+  "registered_scales": {
+    "delta": 0.01,
+    "momentum": 0.064,
+    "particle_equivalent": 6.4,
+    "transverse_magnetic_energy": 0.00032
+  },
+  "required_hdf5": [
+    "EM_B.h5",
+    "EM_E.h5",
+    "ions_charge_density.h5",
+    "ions_charge_flux.h5",
+    "ions_pop_protons_domain.h5"
+  ],
+  "resource_limits": {
+    "artifact_retention_days": 14,
+    "cmake_build_seconds": 1800,
+    "github_job_minutes": 50,
+    "max_hdf5_bytes": 134217728,
+    "max_single_file_bytes": 33554432,
+    "min_disk_free_gib": 10,
+    "min_mem_available_gib": 4,
+    "solver_wall_seconds": 300
+  },
+  "scientific_restrictions": [
+    "One grid pair, one seed, same ppc but different macro-particle realisations; NOT an asymptotic grid-convergence study",
+    "New 128-cell patch size is explicitly fixed to 128 in this 1D scenario; does not independently validate SAMRAI patch adaptation",
+    "No extrapolation to 2D, 3D, magnetic inflation, current closure, solar-wind obstacle, L1 protection, or other IPLS designations"
+  ],
+  "scope": "ONE 128-cell periodic ideal hybrid 1D grid sensitivity screen; NO SOLAR WIND OR OBSTACLE",
+  "status": "REVIEW_DRAFT_NOT_AUTHORISATION_TO_DISPATCH",
+  "time_snapshots": [
+    0.0,
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1.0
+  ]
+}
