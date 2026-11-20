@@ -1,0 +1,438 @@
+{
+  "baseline_case": {
+    "B0": 1.0,
+    "cells": 64,
+    "density": 1.0,
+    "domain_length": 6.4,
+    "dx": 0.1,
+    "electron_temperature": 0.0,
+    "field_amplitude": 0.01,
+    "field_mode": 1,
+    "final_time": 1.0,
+    "hyper_resistivity": 0.0,
+    "initial_bulk_velocity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "initial_fields": "Bx=1; By=0.01*cos(2*pi*x/L); Bz=0.01*sin(2*pi*x/L), sampled at PHARE's proper field centre; ion u=0",
+    "interpolation_order": 2,
+    "ion_charge": 1.0,
+    "ion_mass": 1.0,
+    "name": "P1_single_circular_perturbation",
+    "particles_per_cell": 400,
+    "resistivity": 0.0,
+    "seed": 314159,
+    "snapshot_every_steps": 100,
+    "snapshot_times": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      1.0
+    ],
+    "solver_steps": 1000,
+    "time_step": 0.001,
+    "vthermal": 0.001
+  },
+  "baseline_hdf5_sha256": {
+    "EM_B.h5": "826f64e1f04a3bb94e1d4d1af7274cba81305507bfda40634690a2958b16a573",
+    "EM_E.h5": "0ba2cfb469c85547b96c1ebafcce335238373e43d7793e6a2d9ba874a00e9ec0",
+    "ions_charge_density.h5": "702bf13e243d2a198bc39a51dbec96650a104b31c814fed8815538fddff5d419",
+    "ions_charge_flux.h5": "c4789fd40788be8cfb9faeae648b293e8ac8cd2bc14bf7fb832f9ddcd04f2c8b",
+    "ions_pop_protons_domain.h5": "0c304b2337aad19843bd916f903fce8e97fa6c7326c7ded7f1c30c6db168b338"
+  },
+  "baseline_phare_commit": "7e5c72c1e5eec5452c8e3cfd000ce26c01e084ef",
+  "baseline_protocol_sha256": "4a9e52f7165fc23540dd5f743efe95dd38786c999824ddf829ffe48748291c53",
+  "baseline_raw_artifact_sha256": "4eeb3a5d1c554c4b407dee120c94fb9c94c098ed207d73c8dd723097df8c8f07",
+  "baseline_research_commit": "6fd552816d49ff1cbfc57c1c7090bea733c46fc7",
+  "baseline_run_id": 44796208433,
+  "baseline_run_url": "https://github.com/IPLS-org/shield-l1-research/actions/runs/44796208433",
+  "initial_B_digest_scope": "physical owned Yee grid nodes only, no ghost cells",
+  "initial_logical_dataset_digests": {
+    "EM_B.h5:EM_B_x": {
+      "dtype": "float64",
+      "sha256": "bceb68731affdbb2fab401f75ae4dea9e1fdc99f5b78d33a54952203fb9eebf5",
+      "shape": [
+        65
+      ]
+    },
+    "EM_B.h5:EM_B_y": {
+      "dtype": "float64",
+      "sha256": "484e242b1379cb51dacdba9a7710e768685bc9072255df84b4bc3739e8096418",
+      "shape": [
+        64
+      ]
+    },
+    "EM_B.h5:EM_B_z": {
+      "dtype": "float64",
+      "sha256": "3b608a75208410cbf901e649ddf26768dd187610ff3a90c5ba52ea241f229e35",
+      "shape": [
+        64
+      ]
+    },
+    "ions_pop_protons_domain.h5:delta": {
+      "dtype": "float64",
+      "sha256": "6ff3aefaa9c4c40c0deae8a68a907082d79fbdfd08e88e986a6e653cfcac02f0",
+      "shape": [
+        25600,
+        1
+      ]
+    },
+    "ions_pop_protons_domain.h5:iCell": {
+      "dtype": "int32",
+      "sha256": "5b2cd6ca0c7703c42bcf464d0b3a089067cfe353f17c25c229c8a415852302ac",
+      "shape": [
+        25600,
+        1
+      ]
+    },
+    "ions_pop_protons_domain.h5:v": {
+      "dtype": "float64",
+      "sha256": "8f02ccb3ed9a276fe65644f5b6680f7ff9dc0fb758c6e9ca97c8f4ccbe980520",
+      "shape": [
+        25600,
+        3
+      ]
+    },
+    "ions_pop_protons_domain.h5:weight": {
+      "dtype": "float64",
+      "sha256": "8c081627ee759ec815fc893a1f3378e584ef688d7b204c3316ffc713e136eaf2",
+      "shape": [
+        25600,
+        1
+      ]
+    }
+  },
+  "metric_source": "Read-only reconstructed metrics from actual raw HDF5 using v0.4 known centring/ownership and compensated energy, not synthetic data",
+  "reference_id": "P3B1D-V0.4-BASELINE-FROM-RAW-20261120",
+  "reference_status": "INDEPENDENTLY_RECALCULATED_FROM_PHARE_RAW_HDF5",
+  "scope_limit": "One 1D perturbed case; reference is not a continuum ground truth.",
+  "time_series": [
+    {
+      "Bx_max_deviation": 0.0,
+      "Bx_periodic_mismatch": 0.0,
+      "K": 9.621779636224837e-06,
+      "N": 6.4,
+      "N_deposited": 6.400000000000002,
+      "P": [
+        -1.9011789320636964e-06,
+        -1.1757109404008784e-05,
+        -4.566052402876266e-05
+      ],
+      "U": 3.200329621779636,
+      "UB_transverse": 0.00032,
+      "UBx": 3.2,
+      "UBy": 0.00016000000000000004,
+      "UBz": 0.00015999999999999999,
+      "deltaK": 0.0,
+      "deltaN": 0.0,
+      "deltaP_norm": 0.0,
+      "deltaUB_transverse": 0.0,
+      "deltaU_compensated": 0.0,
+      "initial_wave_mode_imag": 3.059889703793474e-20,
+      "initial_wave_mode_real": 0.010000000000000002,
+      "max_abs_E": 0.009922871187098229,
+      "particle_count": 25600,
+      "t": 0.0,
+      "wave_amplitude": 0.010000000000000002,
+      "wrong_helicity_amplitude": 1.089446387750631e-18
+    },
+    {
+      "Bx_max_deviation": 0.0,
+      "Bx_periodic_mismatch": 0.0,
+      "K": 1.2725184081142994e-05,
+      "N": 6.4,
+      "N_deposited": 6.399999999999999,
+      "P": [
+        -1.9047106763297685e-06,
+        -1.1757112763779918e-05,
+        -4.5660542163958944e-05
+      ],
+      "U": 3.200329621743449,
+      "UB_transverse": 0.0003168965593678797,
+      "UBx": 3.2,
+      "UBy": 0.00015849022811258216,
+      "UBz": 0.0001584063312552975,
+      "deltaK": 3.1034044449181577e-06,
+      "deltaN": 0.0,
+      "deltaP_norm": 3.5317924251489738e-09,
+      "deltaUB_transverse": -3.1034406321203234e-06,
+      "deltaU_compensated": -3.618720219277763e-11,
+      "initial_wave_mode_imag": 0.0009590856975650159,
+      "initial_wave_mode_real": 0.009905047720619675,
+      "max_abs_E": 0.010030986248299685,
+      "particle_count": 25600,
+      "t": 0.1,
+      "wave_amplitude": 0.009951372554729663,
+      "wrong_helicity_amplitude": 1.7502660449818449e-06
+    },
+    {
+      "Bx_max_deviation": 0.0,
+      "Bx_periodic_mismatch": 0.0,
+      "K": 2.1801152810851592e-05,
+      "N": 6.4,
+      "N_deposited": 6.3999999999999995,
+      "P": [
+        -1.9158672372480237e-06,
+        -1.1757115399759218e-05,
+        -4.566055915883929e-05
+      ],
+      "U": 3.2003296217206256,
+      "UB_transverse": 0.00030782056781472643,
+      "UBx": 3.2,
+      "UBy": 0.00015397942229440243,
+      "UBz": 0.00015384114552032403,
+      "deltaK": 1.2179373174626755e-05,
+      "deltaN": 0.0,
+      "deltaP_norm": 1.4688348418363632e-08,
+      "deltaUB_transverse": -1.2179432185273592e-05,
+      "deltaU_compensated": -5.901064680915243e-11,
+      "initial_wave_mode_imag": 0.001890852447254308,
+      "initial_wave_mode_real": 0.00962382929966147,
+      "max_abs_E": 0.010104244369843871,
+      "particle_count": 25600,
+      "t": 0.2,
+      "wave_amplitude": 0.009807824089282505,
+      "wrong_helicity_amplitude": 3.451636714246892e-06
+    },
+    {
+      "Bx_max_deviation": 0.0,
+      "Bx_periodic_mismatch": 0.0,
+      "K": 3.6418327682203504e-05,
+      "N": 6.4,
+      "N_deposited": 6.4,
+      "P": [
+        -1.9338363220140928e-06,
+        -1.1757114800975452e-05,
+        -4.566057642404369e-05
+      ],
+      "U": 3.200329621707158,
+      "UB_transverse": 0.0002932033794757682,
+      "UBx": 3.2,
+      "UBy": 0.00014668056619652868,
+      "UBz": 0.0001465228132792395,
+      "deltaK": 2.6796548045978667e-05,
+      "deltaN": 0.0,
+      "deltaP_norm": 3.2657432427626275e-08,
+      "deltaUB_transverse": -2.6796620524231817e-05,
+      "deltaU_compensated": -7.247825317615187e-11,
+      "initial_wave_mode_imag": 0.0027687396260147102,
+      "initial_wave_mode_real": 0.009162946143375778,
+      "max_abs_E": 0.010293144375750853,
+      "particle_count": 25600,
+      "t": 0.3,
+      "wave_amplitude": 0.009572121036795823,
+      "wrong_helicity_amplitude": 5.07710928443818e-06
+    },
+    {
+      "Bx_max_deviation": 0.0,
+      "Bx_periodic_mismatch": 0.0,
+      "K": 5.588155675606048e-05,
+      "N": 6.4,
+      "N_deposited": 6.4,
+      "P": [
+        -1.9577493618037954e-06,
+        -1.17571133592039e-05,
+        -4.566059418336826e-05
+      ],
+      "U": 3.200329621700588,
+      "UB_transverse": 0.0002737401438314664,
+      "UBx": 3.2,
+      "UBy": 0.00013694034009164796,
+      "UBz": 0.00013679980373981844,
+      "deltaK": 4.6259777119835644e-05,
+      "deltaN": 0.0,
+      "deltaP_norm": 5.6570473378713564e-08,
+      "deltaUB_transverse": -4.625985616853363e-05,
+      "deltaU_compensated": -7.904869798693774e-11,
+      "initial_wave_mode_imag": 0.0035675342802976174,
+      "initial_wave_mode_real": 0.00853322399529916,
+      "max_abs_E": 0.01064938138756694,
+      "particle_count": 25600,
+      "t": 0.4,
+      "wave_amplitude": 0.00924895737881022,
+      "wrong_helicity_amplitude": 6.610020782384783e-06
+    },
+    {
+      "Bx_max_deviation": 0.0,
+      "Bx_periodic_mismatch": 0.0,
+      "K": 7.926500048059833e-05,
+      "N": 6.4,
+      "N_deposited": 6.4,
+      "P": [
+        -1.9865159798632447e-06,
+        -1.1757110756420177e-05,
+        -4.566060926159873e-05
+      ],
+      "U": 3.2003296216991703,
+      "UB_transverse": 0.0002503566986894207,
+      "UBx": 3.2,
+      "UBy": 0.0001252235264537621,
+      "UBz": 0.00012513317223565858,
+      "deltaK": 6.964322084437349e-05,
+      "deltaN": 0.0,
+      "deltaP_norm": 8.533709037462997e-08,
+      "deltaUB_transverse": -6.964330131057934e-05,
+      "deltaU_compensated": -8.04662058420105e-11,
+      "initial_wave_mode_imag": 0.0042640312033432074,
+      "initial_wave_mode_real": 0.00774944505024266,
+      "max_abs_E": 0.010985923805245856,
+      "particle_count": 25600,
+      "t": 0.5,
+      "wave_amplitude": 0.008845103769307344,
+      "wrong_helicity_amplitude": 8.028357561235682e-06
+    },
+    {
+      "Bx_max_deviation": 0.0,
+      "Bx_periodic_mismatch": 0.0,
+      "K": 0.00010545646413066735,
+      "N": 6.4,
+      "N_deposited": 6.4,
+      "P": [
+        -2.0187141185012063e-06,
+        -1.1757105590420477e-05,
+        -4.5660624513718564e-05
+      ],
+      "U": 3.200329621701242,
+      "UB_transverse": 0.00022416523711136805,
+      "UBx": 3.2,
+      "UBy": 0.00011208917579001329,
+      "UBz": 0.00011207606132135475,
+      "deltaK": 9.583468449444251e-05,
+      "deltaN": 0.0,
+      "deltaP_norm": 1.1753522945342833e-07,
+      "deltaUB_transverse": -9.583476288863198e-05,
+      "deltaU_compensated": -7.839418948252328e-11,
+      "initial_wave_mode_imag": 0.0048375941882766536,
+      "initial_wave_mode_real": 0.00682998788896521,
+      "max_abs_E": 0.011272714399661026,
+      "particle_count": 25600,
+      "t": 0.6,
+      "wave_amplitude": 0.008369650655425201,
+      "wrong_helicity_amplitude": 9.312406699471878e-06
+    },
+    {
+      "Bx_max_deviation": 0.0,
+      "Bx_periodic_mismatch": 0.0,
+      "K": 0.00013321058104797968,
+      "N": 6.4,
+      "N_deposited": 6.4,
+      "P": [
+        -2.0527795989027973e-06,
+        -1.1757099557858088e-05,
+        -4.56606380986611e-05
+      ],
+      "U": 3.2003296217058543,
+      "UB_transverse": 0.0001964111248061995,
+      "UBx": 3.2,
+      "UBy": 9.816506731892331e-05,
+      "UBz": 9.824605748727618e-05,
+      "deltaK": 0.00012358880141175483,
+      "deltaN": 0.0,
+      "deltaP_norm": 1.516007100740247e-07,
+      "deltaUB_transverse": -0.00012358887519380054,
+      "deltaU_compensated": -7.378204571286719e-11,
+      "initial_wave_mode_imag": 0.005270680539955264,
+      "initial_wave_mode_real": 0.005796368027689465,
+      "max_abs_E": 0.011709465394807982,
+      "particle_count": 25600,
+      "t": 0.7,
+      "wave_amplitude": 0.00783440844395311,
+      "wrong_helicity_amplitude": 1.0439335156337053e-05
+    },
+    {
+      "Bx_max_deviation": 0.0,
+      "Bx_periodic_mismatch": 0.0,
+      "K": 0.00016120675824746403,
+      "N": 6.4,
+      "N_deposited": 6.4,
+      "P": [
+        -2.087182634423732e-06,
+        -1.1757093459833818e-05,
+        -4.566065015036023e-05
+      ],
+      "U": 3.2003296217118287,
+      "UB_transverse": 0.00016841495358118887,
+      "UBx": 3.2,
+      "UBy": 8.411711036115097e-05,
+      "UBz": 8.42978432200379e-05,
+      "deltaK": 0.0001515849786112392,
+      "deltaN": 0.0,
+      "deltaP_norm": 1.8600374580237579e-07,
+      "deltaUB_transverse": -0.00015158504641881116,
+      "deltaU_compensated": -6.780757194884551e-11,
+      "initial_wave_mode_imag": 0.005549312786538956,
+      "initial_wave_mode_real": 0.004672713036590092,
+      "max_abs_E": 0.012098599522176243,
+      "particle_count": 25600,
+      "t": 0.8,
+      "wave_amplitude": 0.007254592995142026,
+      "wrong_helicity_amplitude": 1.1402576431339976e-05
+    },
+    {
+      "Bx_max_deviation": 0.0,
+      "Bx_periodic_mismatch": 0.0,
+      "K": 0.00018811378096986832,
+      "N": 6.4,
+      "N_deposited": 6.400000000000002,
+      "P": [
+        -2.1202198042161877e-06,
+        -1.1757086431014143e-05,
+        -4.566065907021604e-05
+      ],
+      "U": 3.2003296217182835,
+      "UB_transverse": 0.00014150793731365364,
+      "UBx": 3.2,
+      "UBy": 7.061721542676585e-05,
+      "UBz": 7.08907218868878e-05,
+      "deltaK": 0.00017849200133364347,
+      "deltaN": 0.0,
+      "deltaP_norm": 2.190409149845678e-07,
+      "deltaUB_transverse": -0.0001784920626863464,
+      "deltaU_compensated": -6.135270290668748e-11,
+      "initial_wave_mode_imag": 0.005663403518934492,
+      "initial_wave_mode_real": 0.0034851794650511848,
+      "max_abs_E": 0.012585217706973724,
+      "particle_count": 25600,
+      "t": 0.9,
+      "wave_amplitude": 0.00664985829336942,
+      "wrong_helicity_amplitude": 1.2180235080576465e-05
+    },
+    {
+      "Bx_max_deviation": 0.0,
+      "Bx_periodic_mismatch": 0.0,
+      "K": 0.00021265201127467368,
+      "N": 6.4,
+      "N_deposited": 6.400000000000002,
+      "P": [
+        -2.15033957416336e-06,
+        -1.1757077618002226e-05,
+        -4.5660667405450614e-05
+      ],
+      "U": 3.200329621724271,
+      "UB_transverse": 0.00011696971299619257,
+      "UBx": 3.2,
+      "UBy": 5.831025223874691e-05,
+      "UBz": 5.8659460757445674e-05,
+      "deltaK": 0.00020303023163844886,
+      "deltaN": 0.0,
+      "deltaP_norm": 2.4916068537941823e-07,
+      "deltaUB_transverse": -0.00020303028700380745,
+      "deltaU_compensated": -5.5365358592228756e-11,
+      "initial_wave_mode_imag": 0.005607040415891298,
+      "initial_wave_mode_real": 0.0022613149216420226,
+      "max_abs_E": 0.012781898822301102,
+      "particle_count": 25600,
+      "t": 1.0,
+      "wave_amplitude": 0.006045862006387453,
+      "wrong_helicity_amplitude": 1.2765890174912499e-05
+    }
+  ]
+}

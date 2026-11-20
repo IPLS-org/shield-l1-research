@@ -1,0 +1,120 @@
+{
+  "baseline_artifact_sha256": "4eeb3a5d1c554c4b407dee120c94fb9c94c098ed207d73c8dd723097df8c8f07",
+  "baseline_reference_file": "protocol/p3b1d-baseline-reference-run44796208433.json",
+  "baseline_reference_sha256": "45ff9154ce7c50313c9973acc80198dcd46dd28cc30f889365e74cf694dafcc1",
+  "baseline_run_id": 44796208433,
+  "case": {
+    "B0": 1.0,
+    "cells": 64,
+    "density": 1.0,
+    "domain_length": 6.4,
+    "dx": 0.1,
+    "electron_temperature": 0.0,
+    "field_amplitude": 0.01,
+    "field_mode": 1,
+    "final_time": 1.0,
+    "hyper_resistivity": 0.0,
+    "initial_bulk_velocity": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "initial_fields": "Bx=1; By=0.01*cos(2*pi*x/L); Bz=0.01*sin(2*pi*x/L), sampled at PHARE's proper field centre; ion u=0",
+    "interpolation_order": 2,
+    "ion_charge": 1.0,
+    "ion_mass": 1.0,
+    "name": "P1_dt_half_same_physical_case",
+    "particles_per_cell": 400,
+    "resistivity": 0.0,
+    "seed": 314159,
+    "snapshot_every_steps": 200,
+    "snapshot_times": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      1.0
+    ],
+    "solver_steps": 2000,
+    "time_step": 0.0005,
+    "vthermal": 0.001
+  },
+  "changed_parameters_only": [
+    "name",
+    "time_step",
+    "solver_steps",
+    "snapshot_every_steps"
+  ],
+  "decision_labels": [
+    "BOUNDED_DT_SENSITIVITY_SCREEN_PASS",
+    "BOUNDED_DT_SENSITIVITY_SCREEN_FAIL",
+    "INCONCLUSIVE_INITIAL_STATE",
+    "INCONCLUSIVE_DATA_CONTRACT",
+    "INVALID_CASE"
+  ],
+  "expected_diagnostic_files": [
+    "EM_B.h5",
+    "EM_E.h5",
+    "ions_charge_density.h5",
+    "ions_charge_flux.h5",
+    "ions_pop_protons_domain.h5"
+  ],
+  "gates": {
+    "G0_data": "all 5 files, 11 identical times, correct source and configuration, float64, finite arrays, 64 owned cells, 25600 macro particles each time",
+    "G1_perturbation": "initial first-harmonic circular field complex amplitude within 2% of prescribed 0.01; enforce correct centring and both field components",
+    "G2_number": "max relative weighted-number drift <= max(1e-12,8*eps_float64*25600), and initial count-equivalent within 1e-10 of 6.4",
+    "G3_Bx": "max absolute Bx deviation from 1 <= 1e-12 and periodic endpoint mismatch <= 1e-12; strictly 1D",
+    "G4_momentum": "max Euclidean global ion momentum drift <= 0.05 * 0.064 = 0.0032 in normalised units",
+    "G5_energy": "max absolute change in ion kinetic plus magnetic energy <= 0.05 * 0.00032 = 0.000016, with direct per-component deltas, not fractional of 3.2 background",
+    "G6_exchange": "describe measured magnetic/ion kinetic exchange and field response; exploratory only; no acceptance threshold",
+    "G7_continuity_work": "exploratory and NOT TESTED, internal averaged fields unavailable"
+  },
+  "phare_commit": "7e5c72c1e5eec5452c8e3cfd000ce26c01e084ef",
+  "protocol_id": "P3B1D-DT-HALF-20261120-v0.5",
+  "purpose": "Prospective ONE-case controlled time-step sensitivity comparison against frozen raw Phase 3B.1D v0.4 reference",
+  "registered_scales": {
+    "background_magnetic_energy": 3.2,
+    "momentum": 0.064,
+    "particle_equivalent": 6.4,
+    "transverse_magnetic_energy": 0.00032
+  },
+  "required_hdf5_dtypes": {
+    "field": "float64",
+    "particle_cell": "int32 or integer",
+    "particle_velocities": "float64",
+    "particle_weights": "float64"
+  },
+  "research_predecessor_commit": "6fd552816d49ff1cbfc57c1c7090bea733c46fc7",
+  "resource_limits": {
+    "artifact_retention_days": 14,
+    "cmake_build_seconds": 1800,
+    "github_job_minutes": 50,
+    "max_hdf5_bytes": 67108864,
+    "max_single_file_bytes": 16777216,
+    "min_disk_free_gib": 10,
+    "min_mem_available_gib": 4,
+    "solver_wall_seconds": 300
+  },
+  "scientific_restrictions": [
+    "two dt values at one grid/seed are a sensitivity check, not a convergence-order estimate",
+    "pre-registered thresholds are engineering screens, not a numerical theorem",
+    "no solar wind obstacle, geoeffectiveness or shielding claims"
+  ],
+  "scope": "single-level periodic 1D proton hybrid; Te=0, eta=0, hypereta=0; no AMR or obstacle",
+  "sensitivity_screens": {
+    "S0_identical_initial_arrays": "all 7 initial logical HDF5 datasets Bx/By/Bz and ion weight/iCell/delta/v must exactly match baseline SHA256, else INCONCLUSIVE_INITIAL_STATE",
+    "S1_first_harmonic": "max across same 11 physical times of complex first transverse mode difference / initial delta(0.01) <= 0.01 (absolute complex-mode bound 0.0001)",
+    "S2_exchange": "max across times of |DeltaKfine-DeltaKbase|/SE <= 0.02 AND |DeltaUBtransFine-DeltaUBtransBase|/SE <= 0.02, SE=0.00032 (absolute 6.4e-6)",
+    "S3_momentum": "max Euclidean difference between initial-subtracted total-ion momentum trajectories / SP <= 0.01, SP=0.064 (absolute 0.00064)",
+    "S4_preserve_single_case_gates": "fine run must separately satisfy original 1D G1-G5 screening thresholds, not just S1-S3",
+    "S5_trend_exploratory": "report max energy/momentum drift ratio fine/base but do not require monotone improvement from two dt values or claim convergence order"
+  },
+  "source_basis": "Phase 3B.1D successful unperturbed diagnostic run 44774581522 and pinned source inspection",
+  "status": "REVIEW_DRAFT_NOT_AUTHORISATION_TO_DISPATCH"
+}
