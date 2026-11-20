@@ -1,0 +1,182 @@
+name: Project Shield L1 - PHARE Convergence (3B.1C)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phare-convergence-3b1c
+  cancel-in-progress: false
+
+jobs:
+  convergence:
+    name: One build, 18 seeded 1D hybrid-plasma cases
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      PHARE_REMOTE: https://github.com/PHAREHUB/PHARE.git
+      PHARE_COMMIT: 7e5c72c1e5eec5452c8e3cfd000ce26c01e084ef
+      MPLBACKEND: Agg
+      PYTHONUNBUFFERED: '1'
+      OMP_NUM_THREADS: '1'
+
+    steps:
+      - name: Read pinned study and record runner environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p shield-evidence
+          git clone --filter=blob:none --no-checkout "https://github.com/$GITHUB_REPOSITORY.git" research
+          git -C research checkout --detach "$GITHUB_SHA"
+          test "$(git -C research rev-parse HEAD)" = "$GITHUB_SHA"
+          python3 research/scripts/p3b1c_execute.py \
+            --manifest research/protocol/phase3b1c-matrix.json --list-only \
+            | tee shield-evidence/predeclared-matrix-list.txt
+          {
+            date -u '+UTC: %Y-%m-%dT%H:%M:%SZ'
+            echo "Repository commit: $GITHUB_SHA"
+            echo "Pinned PHARE commit: $PHARE_COMMIT"
+            echo 'Kernel:'; uname -a
+            echo 'Runner OS:'; cat /etc/os-release
+            echo 'CPU affinity:'; nproc
+            echo 'Online CPUs:'; getconf _NPROCESSORS_ONLN
+            echo 'CPU topology:'; lscpu | head -n 25
+            echo 'CPU quota:'; cat /sys/fs/cgroup/cpu.max 2>/dev/null || true
+            echo 'Memory:'; free -h
+            echo 'Disk:'; df -h .
+            echo 'Python:'; python3 --version
+            echo 'CMake:'; cmake --version | head -n 1
+            echo 'C++:'; g++ --version | head -n 1
+          } | tee shield-evidence/runner-manifest.txt
+          # Pre-run resource gate, conservative thresholds for a single build
+          # and 18 sequential 1D cases (not a runtime/memory guarantee).
+          mem_kb=$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)
+          disk_kb=$(df -Pk . | awk 'NR==2 {print $4}')
+          if [ "$mem_kb" -lt 4194304 ] || [ "$disk_kb" -lt 10485760 ]; then
+            echo 'Insufficient runner memory (<4 GiB available) or disk (<10 GiB free).' >&2
+            exit 78
+          fi
+          sha256sum research/scripts/*.py research/protocol/* \
+            > shield-evidence/study-inputs.sha256
+          cp research/protocol/phase3b1c-matrix.json shield-evidence/
+          cp research/protocol/phase3b1c-protocol.md shield-evidence/
+          test "$(find research/scripts -name 'p3b1c_*.py' -type f | wc -l)" -eq 2
+
+      - name: Install pinned solver build dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build gfortran git pkg-config \
+            openmpi-bin libopenmpi-dev libhdf5-openmpi-dev \
+            python3-dev python3-venv
+          h5pcc -showconfig > shield-evidence/hdf5-configuration.txt
+          grep -Eqi 'Parallel HDF5:[[:space:]]*yes' shield-evidence/hdf5-configuration.txt
+          dpkg-query -W openmpi-bin libopenmpi-dev libhdf5-openmpi-dev \
+            > shield-evidence/mpi-hdf5-packages.txt
+
+      - name: Fetch pinned PHARE revision and Python environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none --no-checkout "$PHARE_REMOTE" PHARE
+          git -C PHARE checkout --detach "$PHARE_COMMIT"
+          test "$(git -C PHARE rev-parse HEAD)" = "$PHARE_COMMIT"
+          git -C PHARE log -1 --format='%H %cI %s' > shield-evidence/phare-source-revision.txt
+          sha256sum PHARE/tests/functional/dispersion/dispersion.py \
+            > shield-evidence/dispersion-source.sha256
+          python3 -m venv "$RUNNER_TEMP/phare-venv"
+          "$RUNNER_TEMP/phare-venv/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/phare-venv/bin/python" -m pip install \
+            -r PHARE/requirements.txt ddt pybind11
+          "$RUNNER_TEMP/phare-venv/bin/python" -m pip freeze \
+            > shield-evidence/python-package-freeze.txt
+
+      - name: Configure and build solver once
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/phare-venv/bin:$PATH"
+          cmake -S PHARE -B PHARE/build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=mpicc \
+            -DCMAKE_CXX_COMPILER=mpicxx \
+            -DHDF5_PREFER_PARALLEL=ON \
+            -DHighFive=ON \
+            -Dtest=ON \
+            -DPHARE_EXEC_LEVEL_MIN=10 \
+            -DPHARE_EXEC_LEVEL_MAX=10 \
+            2>&1 | tee shield-evidence/cmake-configure.log
+          cmake --build PHARE/build --parallel 2 \
+            2>&1 | tee shield-evidence/phare-build.log
+          # Reconfirm exact existing qualification before running any variants.
+          ctest --test-dir PHARE/build --verbose -j 1 \
+            -R '^py3_test-dispersion-o[123]$' \
+            2>&1 | tee shield-evidence/dispersion-control-ctest.log
+
+      - name: Execute 18 pre-registered seeded configurations sequentially
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset PHARE_DRY_RUN || true
+          export PATH="$RUNNER_TEMP/phare-venv/bin:$PATH"
+          export PYTHONPATH="$GITHUB_WORKSPACE/PHARE/build:$GITHUB_WORKSPACE/PHARE/pyphare${PYTHONPATH:+:$PYTHONPATH}"
+          /usr/bin/time -v -o shield-evidence/convergence-resource-usage.txt \
+            "$RUNNER_TEMP/phare-venv/bin/python" \
+            research/scripts/p3b1c_execute.py \
+            --manifest research/protocol/phase3b1c-matrix.json \
+            --phare-root PHARE \
+            --output-root shield-p3b1c-sims \
+            2>&1 | tee shield-evidence/convergence-execution.log
+
+      - name: Independent raw HDF5 analysis and pre-registered decision
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$RUNNER_TEMP/phare-venv/bin:$PATH"
+          if [ -f research/scripts/p3b1c_analyse.py ]; then
+            "$RUNNER_TEMP/phare-venv/bin/python" \
+              research/scripts/p3b1c_analyse.py \
+              --manifest research/protocol/phase3b1c-matrix.json \
+              --raw-dir shield-p3b1c-sims \
+              --output shield-evidence/independent-assessment \
+              2>&1 | tee shield-evidence/analysis.log
+            echo "Analysis exit status: ${PIPESTATUS[0]}" \
+              > shield-evidence/analysis-exit-status.txt
+          fi
+
+      - name: Raw data and analysis checksums
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          find shield-p3b1c-sims -type f -name 'EM_B.h5' -print0 \
+            2>/dev/null | sort -z | xargs -0 -r sha256sum \
+            > shield-evidence/raw-hdf5.sha256 || true
+          find shield-evidence/independent-assessment -type f -print0 \
+            2>/dev/null | sort -z | xargs -0 -r sha256sum \
+            > shield-evidence/analysis-files.sha256 || true
+          {
+            echo '### Phase 3B.1C: 1D numerical convergence screening'
+            echo "- PHARE revision: $PHARE_COMMIT"
+            echo '- 18 pre-registered scenarios, one build, raw magnetic field diagnostics.'
+            echo '- Consult independent-assessment/assessment.json for PASS / FAIL / INCONCLUSIVE.'
+            echo '- No obstacle, inflation, solar-wind or geoeffectiveness validation.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preserve complete raw simulation and analysis evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: shield-p3b1c-phare-convergence-${{ github.run_id }}
+          path: |
+            shield-evidence/
+            shield-p3b1c-sims/
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 6
