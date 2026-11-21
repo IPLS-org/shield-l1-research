@@ -1,43 +1,52 @@
-# Project Shield L1 | One perturbed conservation screen, pre-registered v0.4
+# Project Shield L1 | Independent scientific feasibility research
 
-**Status: prepared for source review, not yet executed. This ZIP contains no new PHARE numerical results.** The completed preceding unperturbed diagnostic qualification is GitHub run 44774581522.
+**Current scientific status (21 November 2026):** Phase **3B.2B-05R** has completed a bounded analytical and source-code remediation of magnetic background-field and conservation-accounting questions. **The protective mechanism is unproven. No multidimensional MPI-AMRVAC Shield simulation has been built or run.** The next step is a reviewed implementation design and a separately authorised, prospectively specified small solver-qualification tranche, **not** an obstacle or Earth-protection experiment.
 
-## What this package provides
+Project Shield L1 investigates whether an artificial magnetic/plasma obstacle near Earth-Sun L1 could mitigate harmful solar-wind interactions with Earth's magnetosphere. This is a research hypothesis, **not** a demonstrated shield, deployable design, operational protection system or validated engineering specification.
 
-- Exactly one proposed 1D source-free, zero-electron-temperature PHARE hybrid case, same pinned source as the successful diagnostic smoke. Initial fields `B=(1, 0.01cos(2πx/6.4), 0.01sin(2πx/6.4))` with zero initial ion bulk flow. Grid 64, particles per cell 400, time step 0.001, final time 1.0, 1,000 steps and 11 common HDF5 observation times.
-- An executable run script and a **separately implemented**, read-only HDF5 analysis script. The latter calculates weighted N, P and K, Yee-centred B energy, checks source/diagnostic contracts, and compares absolute excursion against *predeclared* scales. It does **not** import PHARE or trust simulation-reported metrics.
-- A pinned GitHub Actions workflow, manually dispatched only, with an explicit `confirm_one_case=YES` input, double-precision diagnostics, resource limits and failure-evidence preservation.
-- A complete JSON parameter/acceptance contract and readable review protocol.
-- Offline tests constructing **synthetic PHARE-shaped HDF5** (not PHARE output). All scientific claims require a future authorised real run and independent readback.
+## What has actually been established
 
-## Place exactly these FOUR files into the GitHub repository at the root-relative paths shown
+| Programme stage | Verified scope | What it does **not** establish |
+|---|---|---|
+| Phase 3B.1A to 3B.1D | Bounded PHARE hybrid solver benchmarks, numerical reproducibility, controlled sensitivity and conservation diagnostics for specified 1D cases | No 3D source-driven obstacle or geoeffectiveness |
+| Phase 3B.2B-01 to 03 | Ideal finite circular-current mathematical reference: vacuum field, energy, force and Maxwell-stress consistency | No physical winding, current feed, structure, cryogenic design or plasma inflation |
+| Phase 3B.2B-04 | Standalone finite-coil exterior static field mapping: decreasing sampled field errors under grid refinement and discrete curl/divergence consistency | No compiled/run MPI-AMRVAC model or source/plasma boundary qualification |
+| Phase 3B.2B-05 | Prospective MPI-AMRVAC v3.2 source/CT/boundary qualification protocol, source audit, failure modes and proposed resource ceiling | No executed MHD benchmark, approved resource spend or empirical solver pass |
+| Phase 3B.2B-05R | Analytical compatible-face-flux design, manufactured exact-arithmetic counterexample to point-sampled B0 divergence, and source-level split-field energy/momentum accounting | No installed code patch, solver execution, boundary/AMR validation or protective effect |
 
-1. `.github/workflows/phare-perturbed-conservation-3b1d.yml`
-2. `scripts/p3b1d_perturbed_run.py`
-3. `scripts/p3b1d_perturbed_analyse.py`
-4. `protocol/phase3b1d-one-perturbed-v0.4.json`
+**Research integrity:** A successful workflow means a computation ran, not that the physical Shield mechanism works. Distinguish analytical identity, static numerical screen, qualified executable, converged plasma result, and physical validation. The hypotheses about solar-wind-driven magnetic reinforcement (**H-3B2-01**) and expansion/compression/recovery stability (**H-3B2-02**) remain **untested**.
 
-Do not replace or remove any successful 3B.1C or Phase 3B.1D smoke workflow. The Markdown protocol, tests and README are included for review and reproducibility but are not required to run the workflow. GitHub organisation action policy requires **full commit SHAs**: this workflow pins the two third-party actions accordingly.
+## Current principal blockers
 
-## Approval and execution, deliberately separate
+1. **Background B0 and constrained transport:** In the pinned MPI-AMRVAC source, `src/physics/mod_b0.t` populates stationary cell/face background fields by sampling `usr_set_B0`, while `src/mod_constrained_transport.t` creates an evolved staggered field from edge circulation. Controlling `div_h b` does not automatically control `div_h(B0+b)`. A compatible shared-edge, face-flux B0 representation is the preferred *design*, not yet a tested solver feature.
+2. **Conservation:** For stationary `B0`, the solver's split energy contains the perturbation magnetic term; full physical energy also contains `|B0|²/2 + B0·b` (in code-normalised units). Boundary energy flux, momentum, discrete source-current/force residuals and numerical corrections must be independently closed.
+3. **Source and boundaries:** Real coil current closure, energisation and protection are not engineered. `usr_internal_bc` is a state-overwrite hook, not a validated conservative conductor interface. Large reflecting exclusions may produce false-positive deflection.
+4. **Readiness:** The reproducible build, total-field/AMR/BC diagnostics, independently justified quantitative acceptance limits and explicit operator approval remain outstanding.
 
-1. Review the protocol and its numerical acceptance limits. Commit the four files to the repository and note the final commit SHA. This is pre-registration. If any change to scientific limits is needed, make it **before** an experimental run and document the revised commit.
-2. Do **not** dispatch until explicit human approval has been recorded for this **one** case. The workflow starts with input `confirm_one_case=NO` and aborts unless manually changed to `YES`.
-3. In GitHub Actions choose **Project Shield L1 - Phase 3B.1D One Perturbed Conservation Screen**, branch `main` and `confirm_one_case=YES` once. Do not start an additional run in response to unknown performance or an early failure without reviewing the evidence.
-4. On completion, retrieve the workflow artifact, inspect the raw HDF5 and independent-assessment/assessment.json, independently recompute metrics, archive full raw evidence in Project Shield Audit Reports before 14-day expiry, and update programme continuity in a new version.
+**No execution authorisation:** Do not run a coupled solar-wind/artificial-obstacle calculation, build a new solver configuration, dispatch GitHub Actions or spend computational resources merely because this README, a protocol or a source-level note exists. The prospective T00-T04 resource ceiling in the protocol is **not** authorisation. All solver tests require a separate, frozen and explicitly approved plan.
 
-## Strict scientific scope
+## Scientific evidence and programme continuity
 
-The algorithm's result `BOUNDED_SINGLE_CASE_SCREEN_PASS` (if achieved) means **only** that the observed single case met the prospectively set numerical-quality screen. It is not a grid/time-step convergence study, formal proof of conservation, full PHARE qualification, physical confirmation of plasma inflation, or Project Shield L1 shielding validation.
+- [Programme Continuity folder, latest versioned `memory-v*.md`](https://drive.google.com/drive/folders/1gRs5z67uW4xNc4lyfXGL0Na2A17vqLXx). The detailed continuity record, not this landing page, is authoritative for gate decisions and source provenance.
+- [Authoritative Audit Reports folder](https://drive.google.com/drive/folders/1hAXfckULIkFKdpWjhXpZuf_WK824IJN1). Two similarly named folders exist; this exact folder is authoritative.
+- [Phase 3B.2B-04 numerical evidence ZIP](https://drive.google.com/file/d/1k1J2WKlFw4CawmjfxeB7Pj0BrfBgEhsk/view) and [scientific assessment](https://drive.google.com/file/d/1nrbJptABh72cPhQpUuZnX0LuBqWorw2i/view).
+- [Phase 3B.2B-05 prospective qualification protocol and audit](https://drive.google.com/file/d/1M8dVNez7y_TrAxE0aZHt84uHNH34nztJ/view).
+- [Phase 3B.2B-05R source/energy remediation and exact-arithmetic evidence](https://drive.google.com/file/d/1P_E5ocEffJD-29ScRzmqKOmmBLtXILn7/view).
+- [Pinned candidate MPI-AMRVAC v3.2 source commit](https://github.com/amrvac/amrvac/tree/c45d84650ed3379eb22dcfa6fb927a45734e5d8c) (upstream third-party solver; not included or qualified here).
 
-Resource controls: one workflow job with 45-minute global timeout, one 1,000-step solver invocation capped at 300 seconds, 30-minute build subprocess cap, available memory minimum 4 GiB, free disk minimum 10 GiB, max 16 MiB per simulation output file and 64 MiB aggregate HDF5, 14 days evidence retention. GitHub runner limits and billing depend on account and platform state.
+## This repository's executable research history
 
-## Synthetic-test command (local only)
+The repository currently contains the earlier PHARE hybrid-solver workflows and test scripts, including:
 
-```bash
-python -m pytest tests/test_p3b1d_perturbed_offline.py -q
-```
+- `.github/workflows/phare-perturbed-conservation-3b1d.yml`
+- `scripts/p3b1d_perturbed_run.py`, `scripts/p3b1d_perturbed_analyse.py`
+- `protocol/phase3b1d-one-perturbed-v0.4.json`, plus controlled time-step, grid and seed sensitivity workflows.
+- `tests/test_p3b1d_perturbed_offline.py`, which checks synthetic HDF5-shaped data only, **not** a PHARE solver result.
 
-These tests generate data in temporary directories. They never import the PHARE solver, and their success is no evidence of actual conservation behaviour.
+**Historical provenance note:** The former README was a 20 November 2026 *package-specific* Phase 3B.1D pre-registration instruction sheet. That content described a pending one-case workflow and is superseded **as a programme landing page**. The original 3B.1D source files, exact parameter/acceptance contracts and workflows remain in Git history and in the named repository paths. Do not dispatch or repeat them without a fresh, bounded approval and evidence review.
 
-Prepared 20 November 2026 UTC. Pinned PHARE SHA `7e5c72c1e5eec5452c8e3cfd000ce26c01e084ef`.
+## Participation and standards
+
+Independent contributions are welcome, particularly source-level verification, plasma physics, conservative numerical flux methods, falsification controls, and reproducibility audits. Contributions should preserve original raw evidence and exact solver commit/parameters, pre-register scientific tests, maintain negative controls, distinguish observed results from hypotheses, record explicit human approval, and cite the original audit evidence rather than asserting Shield feasibility from plots.
+
+*Maintained as a research status index. Prepared 21 November 2026 UTC, pending GitHub publication.*
